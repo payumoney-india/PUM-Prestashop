@@ -29,7 +29,22 @@
  */
 class CitruspayuValidationModuleFrontController extends ModuleFrontController
 {
+	public $warning = '';
+	public $message = '';
+	public function initContent()
+  	{  
+		parent::initContent();
 	
+		$this->context->smarty->assign(array(
+		  	'warning' => $this->warning,
+			'message' => $this->message
+        	));        	
+	    
+		$this->setTemplate('module:citruspayu/views/templates/front/validation.tpl');  
+    	
+    	
+  	}
+  
     public function postProcess()
     {
         $cart = $this->context->cart;
@@ -48,7 +63,9 @@ class CitruspayuValidationModuleFrontController extends ModuleFrontController
         }
 
         if (!$authorized) {
-            die($this->module->l('This payment method is not available.', 'validation'));
+           $this->warning='This payment method is not available.';
+		   $this->message='Contact Administrator for available payment methods.';
+		   return;
         }
 
         $customer = new Customer($cart->id_customer);
@@ -71,7 +88,9 @@ class CitruspayuValidationModuleFrontController extends ModuleFrontController
 		}
 		else 
 		{
-			die("Citrus / PayUMoney payment error - Invalid response received from payment gateway");
+			$this->warning="Payment error - Invalid response received from payment gateway";
+			$this->message="Payment gateway did not respond is proper format.";
+			return;
 		}
 		
 		if ($payemntType == 1)
@@ -79,7 +98,7 @@ class CitruspayuValidationModuleFrontController extends ModuleFrontController
 		
 			//process citrus response			
 			$amount = $_REQUEST['amount'];
-			$message = $_REQUEST['TxMsg'];
+			$this->message = $_REQUEST['TxMsg'];
 			$response = $_REQUEST['TxStatus'];
 			$cart_id = $cart->id;
 			
@@ -123,7 +142,8 @@ class CitruspayuValidationModuleFrontController extends ModuleFrontController
 				$productInfo  		= 	$postdata['productinfo'];
 				$firstname    		= 	$postdata['firstname'];
 				$email        		=	$postdata['email'];
-				$keyString 	  		=  	$pum_key.'|'.$txnid.'|'.$amount.'|'.$productInfo.'|'.$firstname.'|'.$email.'||||||||||';
+				$udf5 				= 	$postdata['udf5'];
+				$keyString 	  		=  	$pum_key.'|'.$txnid.'|'.$amount.'|'.$productInfo.'|'.$firstname.'|'.$email.'|||||'.$udf5.'|||||';
 				$keyArray 	  		= 	explode("|",$keyString);
 				$reverseKeyArray 	= 	array_reverse($keyArray);
 				$reverseKeyString	=	implode("|",$reverseKeyArray);
@@ -135,7 +155,7 @@ class CitruspayuValidationModuleFrontController extends ModuleFrontController
 			
 					$status = Configuration::get('CITRUSPAYU_ID_ORDER_FAILED');
 					$responseMsg = "Thank you for shopping with us. However, the transaction has been declined.";
-			
+					
 					if($sentHashString==$responseHashString){
 						$status = Configuration::get('CITRUSPAYU_ID_ORDER_SUCCESS');
 						$responseMsg = "Thank you for shopping with us. Your account has been charged and your transaction is successful. We will be shipping your order to you soon.";
@@ -143,11 +163,13 @@ class CitruspayuValidationModuleFrontController extends ModuleFrontController
 						//tampered
 						$status = Configuration::get('CITRUSPAYU_ID_ORDER_FAILED');
 						$responseMsg = "Thank you for shopping with us. However, the payment failed";
+						$this->message = "Payment gateway response is not received in proper format. Could be an attempt to tamper payment.";
 					}
 				}
 				else {
 					$status = Configuration::get('CITRUSPAYU_ID_ORDER_FAILED');
-					$responseMsg = "Thank you for shopping with us. However, the transaction has been declined.";
+					$responseMsg = "Thank you for shopping with us. However, the payment has been cancelled or declined.";
+					$this->message = "Payment gateway responded - ". $postdata['field9'];
 				}
 			}
 		
@@ -161,17 +183,20 @@ class CitruspayuValidationModuleFrontController extends ModuleFrontController
 		}
 		else
 		{
-			PrestaShopLogger::addLog("Citrus - PayUMoney: Created Order for Cartid-".$cart_id,1, null, 'PayUMoney', (int)$cart_id, true);
-			$this->module->validateOrder((int)$cart_id,  $status, (float)$amount, "PayUMoney", null, null, null, false, $customer->secure_key);
+			PrestaShopLogger::addLog("Citrus - PayUmoney: Created Order for Cartid-".$cart_id,1, null, 'PayUmoney', (int)$cart_id, true);
+			$this->module->validateOrder((int)$cart_id,  $status, (float)$amount, "PayUmoney", null, null, null, false, $customer->secure_key);
 		}
 			
 		if ($status == Configuration::get('CITRUSPAYU_ID_ORDER_SUCCESS'))
-		{
+		{			
 			Tools::redirect('index.php?controller=order-confirmation&id_cart='.(int)$cart->id.'&id_module='.(int)$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
 		}
 		else
 		{
-			die("Citrus / PayUMoney payment error - ".$message);
+			$this->warning= $responseMsg;
+			
+			//Tools::redirect('index.php');
+						
 		}
     }
 }

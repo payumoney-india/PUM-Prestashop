@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
     <name>citruspayu</name>
-    <displayName><![CDATA[Citrus and PayUMoney]]></displayName>
+    <displayName><![CDATA[Citrus and PayUmoney]]></displayName>
     <version><![CDATA[1.7]]></version>
-    <description><![CDATA[Accept payments by Citrus and PayUMoney]]></description>
-    <author><![CDATA[Citruspay]]></author>
+    <description><![CDATA[Accept payments by Citrus and PayUmoney]]></description>
+    <author><![CDATA[Payumoney.com]]></author>
     <tab><![CDATA[payments_gateways]]></tab>
 	<confirmUninstall><![CDATA[Are you sure you want to delete these details?]]></confirmUninstall>
     <is_configurable>1</is_configurable>

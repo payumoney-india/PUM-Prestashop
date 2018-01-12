@@ -20,13 +20,13 @@ class citruspayu extends PaymentModule
 		$this->name = 'citruspayu';		
 		$this->tab = 'payments_gateways';		
 		$this->version = 1.7;
-		$this->author = 'Citruspay';
+		$this->author = 'Payumoney.com';
 				
 		$this->bootstrap = true;			
 		parent::__construct();		
 			
-		$this->displayName = $this->trans('Citrus and PayUMoney', array(), 'Modules.Citruspayu.Admin');
-		$this->description = $this->trans('Accept payments by Citrus and PayUMoney', array(), 'Modules.Citruspayu.Admin');
+		$this->displayName = $this->trans('Citrus and PayUmoney', array(), 'Modules.Citruspayu.Admin');
+		$this->description = $this->trans('Accept payments by Citrus and PayUmoney', array(), 'Modules.Citruspayu.Admin');
 		$this->confirmUninstall = $this->trans('Are you sure you want to delete these details?', array(), 'Modules.Citruspayu.Admin');
 		$this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
 		
@@ -56,12 +56,12 @@ class citruspayu extends PaymentModule
 			$title = 'Citrus ICP';
 		}
 		elseif(!$citrus_vanityurl  && !$citrus_access_key && !$citrus_api_key) {
-			$title = 'PayUMoney';
+			$title = 'PayUmoney';
 		}
 		else {
 			if($cper == 0)
 			{
-				$title = 'PayUMoney';
+				$title = 'PayUmoney';
 			}
 			elseif($pper == 0)
 			{
@@ -73,7 +73,7 @@ class citruspayu extends PaymentModule
 				$results = Db::getInstance()->getRow($sql);
 				$ccount = $results['totcount'];
 		
-				$sql = 'select distinct count(*) as totcount from '. _DB_PREFIX_.'order_payment where payment_method = "PayUMoney"';
+				$sql = 'select distinct count(*) as totcount from '. _DB_PREFIX_.'order_payment where payment_method = "PayUmoney"';
 				$results = Db::getInstance()->getRow($sql);
 				$pcount = $results['totcount'];
 				
@@ -85,7 +85,7 @@ class citruspayu extends PaymentModule
 				}
 		
 				if($ccount > $cper && $pcount <= $pper) {
-					$title = 'PayUMoney';
+					$title = 'PayUmoney';
 				}
 				elseif ($ccount <= $cper && $pcount > $pper) {
 					$title = 'Citrus ICP';
@@ -94,7 +94,7 @@ class citruspayu extends PaymentModule
 					if($pcount >= $ccount)
 						$title = 'Citrus ICP';
 					else
-						$title = 'PayUMoney';
+						$title = 'PayUmoney';
 				}
 			}
 		}
@@ -216,9 +216,9 @@ class citruspayu extends PaymentModule
 			} elseif (!Tools::getValue('CITRUSPAYU_MODE')) {
 				$this->_postErrors[] = $this->trans('Gateway mode is required.', array(), 'Modules.Citruspayu.Admin');
 			} elseif (!Tools::getValue('CITRUSPAYU_PAYUKEY') && Tools::getValue('CITRUSPAYU_PAYUSALT')) {
-				$this->_postErrors[] = $this->trans('PayUMoney Key is required.', array(), 'Modules.Citruspayu.Admin');
+				$this->_postErrors[] = $this->trans('PayUmoney Key is required.', array(), 'Modules.Citruspayu.Admin');
 			} elseif (!Tools::getValue('CITRUSPAYU_PAYUSALT') && Tools::getValue('CITRUSPAYU_PAYUKEY')) {
-				$this->_postErrors[] = $this->trans('PayUMoney Salt is required.', array(), 'Modules.Citruspayu.Admin');
+				$this->_postErrors[] = $this->trans('PayUmoney Salt is required.', array(), 'Modules.Citruspayu.Admin');
 			}				
 		}
 	}
@@ -311,13 +311,13 @@ class citruspayu extends PaymentModule
 							),
 						array(
 								'type' => 'text',
-								'label' => $this->trans('PayUMoney Key', array(), 'Modules.Citruspayu.Admin'),
+								'label' => $this->trans('PayUmoney Key', array(), 'Modules.Citruspayu.Admin'),
 								'name' => 'CITRUSPAYU_PAYUKEY',
 								'required' => true
 						),
 						array(
 								'type' => 'text',
-								'label' => $this->trans('PayUMoney Salt', array(), 'Modules.Citruspayu.Admin'),
+								'label' => $this->trans('PayUmoney Salt', array(), 'Modules.Citruspayu.Admin'),
 								'name' => 'CITRUSPAYU_PAYUSALT',
 								'required' => true
 						),
@@ -329,7 +329,7 @@ class citruspayu extends PaymentModule
 						),
 						array(
 								'type' => 'text',
-								'label' => $this->trans('Payment to Route to PayUMoney (%)', array(), 'Modules.Citruspayu.Admin'),
+								'label' => $this->trans('Payment to Route to PayUmoney (%)', array(), 'Modules.Citruspayu.Admin'),
 								'name' => 'CITRUSPAYU_PAYUPERCENTAGE',
 								'required' => true
 							),
@@ -444,6 +444,7 @@ class citruspayu extends PaymentModule
 	{
 		global $smarty, $cart;
 	
+		$udf5 = "Prestashop_v_1.7";
 		$citrus_mode= Configuration::get('CITRUSPAYU_MODE');
 		$payu_key= Configuration::get('CITRUSPAYU_PAYUKEY');
 		$payu_salt= Configuration::get('CITRUSPAYU_PAYUSALT');
@@ -470,7 +471,7 @@ class citruspayu extends PaymentModule
 		$action = 'https://secure.payu.in/_payment.php';
 		if($citrus_mode == 'sandbox')
 		{
-			$action = 'https://test.payu.in/_payment.php';
+			$action = 'https://sandboxsecure.payu.in/_payment.php';
 		}
 			
 		$orderId = $cart->id;
@@ -480,7 +481,7 @@ class citruspayu extends PaymentModule
 		$furl = $return_url;
 		$curl = $return_url;
 
-		$hash=hash('sha512', $payu_key.'|'.$orderId.'|'.$orderAmount.'|'.$productInfo.'|'.$firstName.'|'.$email.'|||||||||||'.$payu_salt);
+		$hash=hash('sha512', $payu_key.'|'.$orderId.'|'.$orderAmount.'|'.$productInfo.'|'.$firstName.'|'.$email.'|||||'.$udf5.'||||||'.$payu_salt);
 		$user_credentials = $payu_key.':'.$email;
 		$service_provider = 'payu_paisa';
 
@@ -504,6 +505,7 @@ class citruspayu extends PaymentModule
 			'address2' => "",
 			'city' => $address->city,
 			'country' => $country->iso_code,
+			'udf5' => $udf5,
 			'state' => '',
 		);
 				
